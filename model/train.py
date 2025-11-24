@@ -1,6 +1,6 @@
 import torch
 from torch_geometric.loader import DataLoader
-from gnn.gcn import GCN
+from model.gcn import GCN
 
 
 gcn_model = GCN()

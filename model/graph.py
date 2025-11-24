@@ -2,14 +2,19 @@ import torch
 from torch_geometric.utils import to_undirected
 from torch_geometric.data import Data
 import rdkit.Chem as Chem
-from gnn.utils import get_encoded_atom_features, get_bond_features, get_bond_index
+from model.utils import get_encoded_atom_features, get_bond_features, get_bond_index
 
 #Molecular graph object
 class Molecular_Graph:
     def __init__(self, smiles, y=None):
         self.smiles = smiles
         self.mol = Chem.MolFromSmiles(self.smiles)
-        self.y = torch.Tensor([[float(y)]])
+
+        if y is not None:
+            self.y = torch.Tensor([[y]])
+        else:
+            self.y=y
+        
         self.nodes = self.get_nodes()
         self.edge_index, self.edge_features = self.get_edges()
         self.data = Data(x=self.nodes.long(), edge_index = self.edge_index.long(), edge_attr = self.edge_features.long(),

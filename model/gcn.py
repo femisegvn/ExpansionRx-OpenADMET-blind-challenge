@@ -27,7 +27,7 @@ class GCN(torch.nn.Module):
         '''
 
         super().__init__()
-        torch.manual_seed(42)
+        #torch.manual_seed(42)
         
         self.input_dim = input_dim
         self.hidden_layers = torch.nn.ModuleList()
