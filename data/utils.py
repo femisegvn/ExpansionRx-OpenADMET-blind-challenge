@@ -12,7 +12,7 @@ def results_to_submission(results_df, csv_path, reverse_log = True):
     reverse_dict = dict([(x[-1], x[0:-1]) for x in conversion_df.values])
 
     output_df = results_df[["SMILES", "Molecule Name"]].copy()
-    for col in results_df.columns[3:]:
+    for col in results_df.columns[2:]:
         if col == "dataset":
             continue
         orig_name, log_scale, multiplier = reverse_dict[col]
