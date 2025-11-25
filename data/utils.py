@@ -4,6 +4,26 @@ from rdkit.Chem import Descriptors, rdFingerprintGenerator
 from rdkit.ML.Descriptors import MoleculeDescriptors
 from rdkit.DataStructs import ConvertToNumpyArray
 
+from data.train_data import conversion_df
+
+
+def results_to_submission(results_df, csv_path, reverse_log = True):
+
+    reverse_dict = dict([(x[-1], x[0:-1]) for x in conversion_df.values])
+
+    output_df = results_df[["SMILES", "Molecule Name"]].copy()
+    for col in results_df.columns[3:]:
+        if col == "dataset":
+            continue
+        orig_name, log_scale, multiplier = reverse_dict[col]
+        output_df[orig_name] = results_df[col]
+        if log_scale:
+            output_df[orig_name] = 10 ** output_df[orig_name] * 1 / multiplier - 1
+
+    output_df.to_csv(csv_path, index=False)
+    print(f'Results written to {csv_path}')
+
+    return output_df
 
 
 def compute_rdkit_descriptors(smiles, fingerprint=False):
