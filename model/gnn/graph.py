@@ -2,7 +2,7 @@ import torch
 from torch_geometric.utils import to_undirected
 from torch_geometric.data import Data
 import rdkit.Chem as Chem
-from model.utils import get_encoded_atom_features, get_bond_features, get_bond_index
+from model.gnn.utils import get_encoded_atom_features, get_bond_features, get_bond_index
 
 #Molecular graph object
 class Molecular_Graph:
