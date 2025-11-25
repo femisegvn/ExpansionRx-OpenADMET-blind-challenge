@@ -33,3 +33,5 @@ for col in train_df.columns[2:]:
         log_train_df[short_name] = log_train_df[short_name] + 1
         # do the log transform
         log_train_df[short_name] = np.log10(log_train_df[short_name] * multiplier)
+
+log_col_names = log_train_df.columns[2:]
