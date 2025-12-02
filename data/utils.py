@@ -61,5 +61,21 @@ def compute_rdkit_descriptors(smiles, fingerprint=False):
         for i in range(len(arr)):
             features[f'FP_{i}'] = arr[i]
     
-
     return features
+
+def remove_correlated_features(df, threshold=0.9):
+    """
+    Remove one feature from each pair of correlated features above the given threshold.
+    Returns a reduced DataFrame and list of dropped columns.
+    """
+    # Compute correlation matrix (absolute value)
+    corr_matrix = df.corr().abs()
+
+    # Upper triangle only (to avoid duplicate pairs)
+    upper = corr_matrix.where(np.triu(np.ones(corr_matrix.shape), k=1).astype(bool))
+
+    # Find features with correlation above threshold
+    to_drop = [column for column in upper.columns if any(upper[column] > threshold)]
+
+    #print(f"Dropping {len(to_drop)} highly correlated features (>{threshold})")
+    return df.drop(columns=to_drop), to_drop
