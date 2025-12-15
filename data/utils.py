@@ -1,11 +1,11 @@
 import numpy as np
 import rdkit.Chem as Chem
-from rdkit.Chem import Descriptors, rdFingerprintGenerator
+from rdkit.Chem import Descriptors, rdFingerprintGenerator, rdMolDescriptors, Lipinski, Crippen, DataStructs
 from rdkit.ML.Descriptors import MoleculeDescriptors
 from rdkit.DataStructs import ConvertToNumpyArray
+import pandas as pd
 
 from data.train_data import conversion_df
-
 
 def results_to_submission(results_df, csv_path, reverse_log = True):
 
@@ -79,3 +79,61 @@ def remove_correlated_features(df, threshold=0.9):
 
     #print(f"Dropping {len(to_drop)} highly correlated features (>{threshold})")
     return df.drop(columns=to_drop), to_drop
+
+def characterise(df, name = None):
+    '''
+    Definitely should have a better name for this but I just wanted a
+    quick function for calculating like 6 descriptors for exploration
+    '''
+
+    smiles = df.SMILES
+
+    mols = [Chem.MolFromSmiles(s) for s in smiles]
+    features = {'MWt': rdMolDescriptors.CalcExactMolWt,
+                'TPSA': rdMolDescriptors.CalcTPSA,
+                'HDonors': Lipinski.NumHDonors,
+                'HAcceptors': Lipinski.NumHAcceptors,
+                'CLogP': Crippen.MolLogP}
+    
+    feat_dict = {}
+        
+    for feat_name, feat in features.items():
+        feature = [feat(mol) for mol in mols]
+        
+        feat_dict[feat_name] = feature
+
+    feat_df = pd.DataFrame(feat_dict)
+
+    df = df.join(feat_df)
+
+    if name is not None:
+        df['Dataset'] = name
+
+    return df
+
+def get_train_test_similarity(df : pd.DataFrame ,
+                              smiles_col : str = "SMILES",
+                              set_col : str = "Dataset") -> pd.DataFrame: 
+    """
+    Stolen entirely from Fischer et al.
+    """
+    radius = 2
+    fpSize = 2048
+    includeChirality=True
+    
+    df = df.copy()
+    fg = rdFingerprintGenerator.GetMorganGenerator(radius=radius, fpSize=fpSize,includeChirality=includeChirality)
+    train_mol_list = [Chem.MolFromSmiles(smi) for smi in df.loc[df[set_col] == 'Train',:][smiles_col]]
+    test_mol_list = [Chem.MolFromSmiles(smi) for smi in df.loc[df[set_col] != 'Train',:][smiles_col]]
+
+    train_fp = [fg.GetFingerprint(x) for x in train_mol_list]
+    test_fp = [fg.GetFingerprint(x) for x in test_mol_list]
+
+    df["train_test_sim"] = np.nan
+    train_test_sim = [np.max([DataStructs.TanimotoSimilarity(train, test) for test in test_fp]) for train in train_fp]
+    sim_train = [np.max([DataStructs.TanimotoSimilarity(train, test) for test in test_fp]) for train in train_fp]
+    sim_test = [np.max([DataStructs.TanimotoSimilarity(train, test) for train in train_fp]) for test in test_fp]
+    df.loc[df[set_col] == 'Train', "train_test_sim"] = sim_train
+    df.loc[df[set_col] == 'Test', "train_test_sim"] = sim_test
+    return df
+
