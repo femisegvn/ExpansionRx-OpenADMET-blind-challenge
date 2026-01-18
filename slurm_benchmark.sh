@@ -2,14 +2,14 @@
 #SBATCH --job-name=admet_benchmark
 #SBATCH --output=benchmark_%j.out
 #SBATCH --error=benchmark_%j.err
-#SBATCH --partition=gpu  # or cpu, depending on your cluster
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
-#SBATCH --cpus-per-task=16
-#SBATCH --mem=32GB
-#SBATCH --time=24:00:00
+#SBATCH --cpus-per-task=48
+#SBATCH --mem=3700
+#SBATCH --time=2:00:00
 
 # Load miniconda module
+module purge
 module load miniconda
 
 # Create conda environment from yml file
