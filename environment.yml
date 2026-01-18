@@ -1,0 +1,14 @@
+name: admet_benchmark
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.8
+  - rdkit
+  - numpy
+  - pandas
+  - scikit-learn
+  - xgboost
+  - tqdm
+  - seaborn
+  - matplotlib

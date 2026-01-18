@@ -26,12 +26,12 @@ log_train_df = train_df[["SMILES", "Molecule Name"]].copy()
 
 for col in train_df.columns[2:]:
     log_scale, multiplier, short_name = conversion_dict[col]
-    # add a new column with short_name as the column name
+    
     log_train_df[short_name] = train_df[col].astype(float)
     if log_scale:
-        # add 1 to avoid taking the log of 0
+    
         log_train_df[short_name] = log_train_df[short_name] + 1
-        # do the log transform
+    
         log_train_df[short_name] = np.log10(log_train_df[short_name] * multiplier)
 
 log_col_names = log_train_df.columns[2:]

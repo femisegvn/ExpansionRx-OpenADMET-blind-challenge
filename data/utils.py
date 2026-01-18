@@ -26,7 +26,7 @@ def results_to_submission(results_df, csv_path, reverse_log = True):
     return output_df
 
 
-def compute_rdkit_descriptors(smiles, fingerprint=False):
+def compute_rdkit_descriptors(smiles, fingerprint=False, descriptor_filter='all'):
     '''
     takes just one smiles string as input
     '''
@@ -37,28 +37,38 @@ def compute_rdkit_descriptors(smiles, fingerprint=False):
         return None
 
     # Get all descriptor names
-    descriptor_names = [desc_name for desc_name, _ in Descriptors.descList]
+    all_descriptor_names = [desc_name for desc_name, _ in Descriptors.descList]
 
-    # Create calculator
-    calculator = MoleculeDescriptors.MolecularDescriptorCalculator(descriptor_names)
-
-    # Calculate all descriptors
-    values = calculator.CalcDescriptors(mol)
+    if descriptor_filter == 'none':
+        descriptor_names = []
+    elif descriptor_filter == 'no_frag':
+        descriptor_names = [d for d in all_descriptor_names if not d.startswith('fr_')]
+    elif descriptor_filter == 'frag':
+        descriptor_names = [d for d in all_descriptor_names if d.startswith('fr_')]
+    else:  # 'all'
+        descriptor_names = all_descriptor_names
 
     # Combine into dict
     features = {}
     features['SMILES'] = smiles
 
-    for desc, val in zip(descriptor_names, values):
-        features[desc] = val
+    if descriptor_names:
+        # Create calculator
+        calculator = MoleculeDescriptors.MolecularDescriptorCalculator(descriptor_names)
+
+        # Calculate all descriptors
+        values = calculator.CalcDescriptors(mol)
+
+        for desc, val in zip(descriptor_names, values):
+            features[desc] = val
     
     if fingerprint:
         # --- Morgan fingerprint (radius=2, nBits=1024) ---
         morgan_gen = rdFingerprintGenerator.GetMorganGenerator(radius=2, fpSize=1024)
         fp = morgan_gen.GetFingerprint(mol)
-        arr = np.zeros((1,))
+        arr = np.zeros((1024,))
         ConvertToNumpyArray(fp, arr)
-        for i in range(len(arr)):
+        for i in range(1024):
             features[f'FP_{i}'] = arr[i]
     
     return features
