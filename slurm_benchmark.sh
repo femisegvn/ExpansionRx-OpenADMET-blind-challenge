@@ -6,11 +6,11 @@
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=48
 #SBATCH --mem=3700
-#SBATCH --time=2:00:00
+#SBATCH --time=02:00:00
 
 # Load miniconda module
 module purge
-module load miniconda
+module load Miniconda3/23.9.0-0
 
 # Create conda environment from yml file
 conda env create -f environment.yml -n admet_benchmark_hpc
